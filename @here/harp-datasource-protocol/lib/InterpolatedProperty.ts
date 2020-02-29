@@ -101,7 +101,9 @@ export function getPropertyValue(property: Value | Expr | undefined, env: Env): 
         return property.evaluate(env, ExprScope.Dynamic);
     }
 
-    if (typeof property !== "string") {
+    if (typeof property === "function") {
+        return property(env);
+    } else if (typeof property !== "string") {
         // Property in numeric or array, etc. format
         return property;
     } else {
