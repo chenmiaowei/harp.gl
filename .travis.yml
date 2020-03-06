@@ -38,6 +38,7 @@ jobs:
       script:
         - cross-env NODE_ENV=production yarn run build
         - yarn run typedoc
+        - yarn run api-extractor
         - cross-env NODE_ENV=production yarn run build-www
         - yarn prepare-doc-deploy
         # debug: lerna publish expects clean workspace

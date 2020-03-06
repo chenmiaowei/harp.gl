@@ -6,5 +6,5 @@ test-npm-packages-app/
 .DS_Store
 .nyc_output/
 rendering-test-results/
-
+@here/*/temp/
 credentials.js
