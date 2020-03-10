@@ -175,6 +175,22 @@ describe("MapView", function() {
         }
     });
 
+    // tslint:disable-next-line: max-line-length
+    it("Correctly set and get tilt", function() {
+        mapView = new MapView({
+            canvas
+        });
+
+        for (let i = 1; i <= 20; i += 0.1) {
+            mapView.zoomLevel = i;
+            for (let tilt = 0; tilt < 89; tilt += 0.1) {
+                mapView.tilt = tilt;
+                expect(mapView.zoomLevel).to.be.closeTo(i, 1e-10);
+                expect(mapView.tilt).to.be.closeTo(tilt, 1e-10);
+            }
+        }
+    });
+
     it("Correctly sets geolocation with GeoPointLike as parameter in constructor", function() {
         mapView = new MapView({
             canvas,
