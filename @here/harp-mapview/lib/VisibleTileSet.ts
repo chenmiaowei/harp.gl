@@ -519,7 +519,7 @@ export class VisibleTileSet {
             let allDataSourceTilesLoaded = true;
             let numTilesLoading = 0;
             // Create actual tiles only for the allowed number of visible tiles
-            const displayZoomLevel = dataSource.getDisplayZoomLevel(zoomLevel);
+            const displayZoomLevel = dataSource.getDataZoomLevel(zoomLevel);
             for (
                 let i = 0;
                 i < visibleTileKeys.length &&
@@ -883,11 +883,11 @@ export class VisibleTileSet {
     ): { searchLevelsUp: number; searchLevelsDown: number } {
         const searchLevelsUp = Math.min(
             this.options.quadTreeSearchDistanceUp,
-            Math.max(0, visibleLevel - dataSource.minZoomLevel)
+            Math.max(0, visibleLevel - dataSource.minDataLevel)
         );
         const searchLevelsDown = Math.min(
             this.options.quadTreeSearchDistanceDown,
-            Math.max(0, dataSource.maxZoomLevel - visibleLevel)
+            Math.max(0, dataSource.maxDataLevel - visibleLevel)
         );
 
         return { searchLevelsUp, searchLevelsDown };
@@ -1212,7 +1212,7 @@ export class VisibleTileSet {
         // For each bucket of data sources with same tiling scheme, calculate frustum intersection
         // once using the maximum display level.
         for (const [tilingScheme, bucket] of dataSourceBuckets) {
-            const zoomLevels = bucket.map(dataSource => dataSource.getDisplayZoomLevel(zoomLevel));
+            const zoomLevels = bucket.map(dataSource => dataSource.getDataZoomLevel(zoomLevel));
             const result = this.m_frustumIntersection.compute(
                 tilingScheme,
                 elevationRangeSource,
@@ -1226,7 +1226,7 @@ export class VisibleTileSet {
                 // For each data source check what tiles from the intersection should be rendered
                 // at this zoom level.
                 const visibleTileKeys: TileKeyEntry[] = [];
-                const displayZoomLevel = dataSource.getDisplayZoomLevel(zoomLevel);
+                const displayZoomLevel = dataSource.getDataZoomLevel(zoomLevel);
                 for (const tileKeyEntry of result.tileKeyEntries.get(displayZoomLevel)!.values()) {
                     if (dataSource.canGetTile(displayZoomLevel, tileKeyEntry.tileKey)) {
                         visibleTileKeys.push(tileKeyEntry);
