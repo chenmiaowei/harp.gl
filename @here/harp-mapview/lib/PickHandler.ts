@@ -8,7 +8,7 @@ import { GeometryType, getFeatureId, Technique } from "@here/harp-datasource-pro
 import * as THREE from "three";
 
 import { OrientedBox3 } from "@here/harp-geoutils";
-import { MapView } from "./MapView";
+import { MapView, MapViewEventNames } from "./MapView";
 import { MapViewPoints } from "./MapViewPoints";
 import { RoadPicker } from "./RoadPicker";
 import { RoadIntersectionData, Tile, TileFeatureData } from "./Tile";
@@ -106,6 +106,8 @@ const tmpOBB = new OrientedBox3();
 export class PickHandler {
     private readonly m_plane = new THREE.Plane(new THREE.Vector3(0, 0, 1));
     private readonly m_roadPicker?: RoadPicker;
+    private readonly m_lastPickedTiles: OrientedBox3[] = [];
+    private readonly m_debugGroup = new THREE.Group();
 
     constructor(
         readonly mapView: MapView,
@@ -116,6 +118,33 @@ export class PickHandler {
         if (enableRoadPicking) {
             this.m_roadPicker = new RoadPicker(mapView);
         }
+
+        this.mapView.addEventListener(MapViewEventNames.Render, () => {
+            this.m_debugGroup.children.length = 0;
+
+            for (const obb of this.m_lastPickedTiles) {
+                const material = new THREE.MeshBasicMaterial({
+                    color: "blue",
+                    wireframe: true,
+                    wireframeLinewidth: 2.0,
+                    depthTest: false
+                });
+
+                const geometry = new THREE.BoxGeometry(
+                    2.0 * obb.extents.x,
+                    2.0 * obb.extents.y,
+                    2.0 * obb.extents.z
+                );
+                const mesh = new THREE.Mesh(geometry, material);
+                obb.getCenter(mesh.position);
+                mesh.position.sub(this.mapView.worldCenter);
+                mesh.setRotationFromMatrix(obb.getRotationMatrix());
+                mesh.renderOrder = 10000;
+                mesh.updateMatrixWorld(true);
+                this.m_debugGroup.add(mesh);
+                this.mapView.scene.add(this.m_debugGroup);
+            }
+        });
     }
 
     /**
@@ -137,6 +166,7 @@ export class PickHandler {
      * @returns the list of intersection results.
      */
     intersectMapObjects(x: number, y: number): PickResult[] {
+        this.m_lastPickedTiles.length = 0;
         const worldPos = this.mapView.getNormalizedScreenCoordinates(x, y);
         const rayCaster = this.mapView.raycasterFromScreenPoint(x, y);
         const pickResults: PickResult[] = [];
@@ -157,6 +187,7 @@ export class PickHandler {
                 tmpOBB.position.sub(this.mapView.worldCenter);
 
                 if (tmpOBB.intersectsRay(rayCaster.ray) !== undefined) {
+                    this.m_lastPickedTiles.push(tile.boundingBox);
                     rayCaster.intersectObjects(tile.objects, true, intersects);
                 }
             });
