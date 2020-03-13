@@ -598,7 +598,8 @@ export class TileGeometryCreator {
                     groups[groupIndex].createdOffsets!.push(tile.offset);
                 }
 
-                const ObjectCtor = getObjectConstructor(technique);
+                const elevationEnabled = mapView.elevationProvider !== undefined;
+                const ObjectCtor = getObjectConstructor(technique, elevationEnabled);
 
                 if (ObjectCtor === undefined) {
                     continue;
